@@ -1,2 +1,2 @@
-# robotics-25
+# Robotics course project
 Maze solving robot using Arduino
