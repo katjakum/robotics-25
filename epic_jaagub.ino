@@ -1,36 +1,54 @@
-#include <AFMotor.h>
+const int ena = 3; 
+const int frontR = 12;
+const int rearR = 11;
+const int enb = 6; 
+const int frontL = 7;
+const int rearL = 8;
 
-// motors
-AF_DCMotor frontR(12)
-AF_DCMotor rearR(11)
-AF_DCMotor frontL(7)
-AF_DCMotor rearL(8)
+void speed() {
+  analogWrite(ena, 100);
+  analogWrite(enb, 100);
+}
 
-// pins
-/*const int SERVO_PIN 9
-const int ECHO_PIN 
-const int TRIG_PIN
-const int BUZZ_PIN*/
+void turningSpeed() {
+  analogWrite(ena, 180);
+  analogWrite(enb, 180);
+}
 
-// movement
-const int forwardSpeed = 80;
-const int turningSpeed = 60;
-const int turnDelay = 25;
-const int uTurnDelay = 50;
+void goForward() {
+  digitalWrite(frontR, HIGH);
+  digitalWrite(rearR, LOW);
+  digitalWrite(frontL, HIGH);
+  digitalWrite(rearL, LOW);
+  speed();
+}
+
+void goRight() {
+  digitalWrite(frontR, LOW);
+  digitalWrite(rearR, HIGH);
+  digitalWrite(frontL, HIGH);
+  digitalWrite(rearL, LOW);
+  turningSpeed();
+}
+
+void goLeft()
+{
+  digitalWrite(frontR, HIGH);
+  digitalWrite(rearR, LOW);
+  digitalWrite(frontL, LOW);
+  digitalWrite(rearL, HIGH);
+  turningSpeed();
+}
 
 void setup() {
-  
-  moveForward();
-
+  pinMode(ena, OUTPUT);
+  pinMode(frontR, OUTPUT);
+  pinMode(rearR, OUTPUT);
+  pinMode(enb, OUTPUT);
+  pinMode(frontL, OUTPUT);
+  pinMode(rearL, OUTPUT);
 }
 
 void loop() {
   
-  void moveForward() {
-    frontR.setSpeed(forwardSpeed);
-    frontL.setSpeed(forwardSpeed);
-    frontR.run(FORWARD);
-    frontL.run(FORWARD);
-  }
-
 }
