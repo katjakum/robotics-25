@@ -12,17 +12,21 @@ const int trigpin = 10;
 const int servopin = 9; 
 
 const int frontlimit = 20; 
-const int sidelimit = 15; 
+//const int sidelimit = 5; 
+
+
+const int leftSensor = 5;
+//const int rightSensor = 2; 
 Servo head;
 int distanceL, distanceF, distanceR;
 void speed() {
-  analogWrite(ena, 150);
-  analogWrite(enb, 150);
+  analogWrite(ena, 100);
+  analogWrite(enb, 100);
 }
 
 void turningSpeed() {
-  analogWrite(ena, 180);
-  analogWrite(enb, 180);
+  analogWrite(ena, 140);
+  analogWrite(enb, 140);
 }
 
 void goForward() {
@@ -71,9 +75,9 @@ int measureDistance() {
   return distance;
 }
 
-int measure(int angle){
-  head.write(angle);
-  delay(200);
+int measure(){
+  head.write(90);
+  delay(150);
   return measureDistance();
 }
 void setup() {
@@ -83,35 +87,43 @@ void setup() {
   pinMode(enb, OUTPUT);
   pinMode(frontL, OUTPUT);
   pinMode(rearL, OUTPUT);
+  pinMode(leftSensor, INPUT);
+  //pinMode(rightSensor, INPUT);
+  pinMode(trigpin, OUTPUT);
+  pinMode(echopin, INPUT);
   head.attach(servopin);
-  head.write(90);
   delay(300);
-  goForward();
-
+  Serial.begin(9600); 
 }
 
-void solvemaze(){
-  // three different ways
-  distanceL = measure(150);
-  distanceF = measure(90);
-  distanceR = measure(30);
+void solvemaze() {
+    distanceF = measure(); 
+    int leftValue = digitalRead(leftSensor);
 
-  
-  
-if(distanceF < frontlimit ){
-  
-  if(distanceL > sidelimit){
-    goLeft();
-  }
-  else if(distanceR > sidelimit) {
-    goRight(); 
-  }
-} else{
-  goForward();
-}
-}
+    Serial.print("Front distance: ");
+    Serial.print(distanceF);
+    Serial.print(" cm | Left sensor: ");
+    Serial.println(leftValue);
 
-void loop() {
-  solvemaze(); 
+    /
+    if (distanceF < frontlimit) {
+        Stop();
+        delay(100);
+        if (leftValue == LOW) {
+            goRight(); 
+        } else {
+            goLeft();  
+        }
+    }
+    
+    else if (leftValue == LOW) {
+        goRight();
+    }
+    
+    else {
+        goForward();
+    }
 
+    delay(50);
 }
+void loop() { solvemaze(); }
