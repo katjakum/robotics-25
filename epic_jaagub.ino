@@ -12,13 +12,14 @@ const int trigpin = 10;
 const int servopin = 9; 
 
 const int frontlimit = 20; 
-//const int sidelimit = 5; 
-
 
 const int leftSensor = 5;
 const int rightSensor = 2; 
+
 Servo head;
+
 int distanceL, distanceF, distanceR;
+
 void speed() {
   analogWrite(ena, 100);
   analogWrite(enb, 100);
@@ -45,36 +46,31 @@ void goRight() {
   turningSpeed();
 }
 
-void goLeft()
-{
+void goLeft() {
   digitalWrite(frontR, HIGH);
   digitalWrite(rearR, LOW);
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, HIGH);
   turningSpeed();
 }
+
 void goBackward() {
-  // Oikea moottori taaksepäin
   digitalWrite(frontR, LOW);
   digitalWrite(rearR, HIGH);
-
-  // Vasen moottori taaksepäin
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, HIGH);
-
-  // Käytetään normaalia nopeutta taaksepäin
   speed();
 }
 
-void Stop()
-{
+void Stop() {
   digitalWrite(frontR, LOW);
   digitalWrite(rearR, LOW);
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, LOW);
-  analogWrite(ena,0);
-  analogWrite(enb,0); 
+  analogWrite(ena, 0);
+  analogWrite(enb, 0); 
 }
+
 int measureDistance() {
   digitalWrite(trigpin, LOW);
   delayMicroseconds(2);
@@ -87,11 +83,12 @@ int measureDistance() {
   return distance;
 }
 
-int measure(){
+int measure() { 
   head.write(90);
   delay(150);
   return measureDistance();
 }
+
 void setup() {
   pinMode(ena, OUTPUT);
   pinMode(frontR, OUTPUT);
@@ -109,39 +106,54 @@ void setup() {
 }
 
 void solvemaze() {
-    distanceF = measure(); 
-    int leftValue = digitalRead(leftSensor);
-    int rightValue = digitalRead(rightSensor);
-    Serial.print("Front distance: ");
-    Serial.print(distanceF);
-    Serial.print(" cm | Left sensor: ");
-    Serial.println(leftValue);
+  distanceF = measure(); 
+  int leftValue = digitalRead(leftSensor);
+  int rightValue = digitalRead(rightSensor);
 
-    
-    if (distanceF < frontlimit) {
-        Stop();
-        delay(100);
-        if (leftValue == LOW) { // näkee esteen
-            goRight(); 
-        } else if (leftValue == LOW && rightValue == LOW){
-          goBackward(); 
-          delay(200);
-        }
-        else {
-            goLeft();  
-        }
+  if (distanceF < frontlimit) { // wall infront
+    Stop();
+    delay(100);
+
+    if (leftValue == LOW && rightValue == LOW) { // corner
+      goBackward();
+      delay(300);
+      Stop();
     }
     
-    else if (leftValue == LOW) {
-        goRight();
+    else if (leftValue == LOW) { // left side is blocked
+      goRight();
+      delay(300);
+      Stop();
     }
-    else if (rightValue == LOW){
-        goLeft();
+    
+    else if (rightValue == LOW) { // right side is blocked
+      goLeft();
+      delay(300);
+      Stop();
     }
-    else {
-        goForward();
+    
+    else { // otherwise turn left
+      goLeft();
+      delay(300);
+      Stop();
     }
+  }
+    
+  else if (leftValue == LOW && rightValue == HIGH) { // avoid left wall
+    goRight();
+  }
+    
+  else if (rightValue == LOW && leftValue == HIGH) { // avoid right wall
+    goLeft();
+  }
+    
+  else { // no sensors activated, go forward
+    goForward();
+  }
 
-    delay(50);
+  delay(50);
 }
-void loop() { solvemaze(); }
+
+void loop() {
+  solvemaze();
+}
