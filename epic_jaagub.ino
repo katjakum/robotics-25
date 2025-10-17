@@ -16,7 +16,7 @@ const int frontlimit = 20;
 
 
 const int leftSensor = 5;
-//const int rightSensor = 2; 
+const int rightSensor = 2; 
 Servo head;
 int distanceL, distanceF, distanceR;
 void speed() {
@@ -53,6 +53,18 @@ void goLeft()
   digitalWrite(rearL, HIGH);
   turningSpeed();
 }
+void goBackward() {
+  // Oikea moottori taaksepäin
+  digitalWrite(frontR, LOW);
+  digitalWrite(rearR, HIGH);
+
+  // Vasen moottori taaksepäin
+  digitalWrite(frontL, LOW);
+  digitalWrite(rearL, HIGH);
+
+  // Käytetään normaalia nopeutta taaksepäin
+  speed();
+}
 
 void Stop()
 {
@@ -88,7 +100,7 @@ void setup() {
   pinMode(frontL, OUTPUT);
   pinMode(rearL, OUTPUT);
   pinMode(leftSensor, INPUT);
-  //pinMode(rightSensor, INPUT);
+  pinMode(rightSensor, INPUT);
   pinMode(trigpin, OUTPUT);
   pinMode(echopin, INPUT);
   head.attach(servopin);
@@ -99,19 +111,23 @@ void setup() {
 void solvemaze() {
     distanceF = measure(); 
     int leftValue = digitalRead(leftSensor);
-
+    int rightValue = digitalRead(rightSensor);
     Serial.print("Front distance: ");
     Serial.print(distanceF);
     Serial.print(" cm | Left sensor: ");
     Serial.println(leftValue);
 
-    /
+    
     if (distanceF < frontlimit) {
         Stop();
         delay(100);
-        if (leftValue == LOW) {
+        if (leftValue == LOW) { // näkee esteen
             goRight(); 
-        } else {
+        } else if (leftValue == LOW && rightValue == LOW){
+          goBackward(); 
+          delay(200);
+        }
+        else {
             goLeft();  
         }
     }
@@ -119,7 +135,9 @@ void solvemaze() {
     else if (leftValue == LOW) {
         goRight();
     }
-    
+    else if (rightValue == LOW){
+        goLeft();
+    }
     else {
         goForward();
     }
