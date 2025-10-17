@@ -116,26 +116,19 @@ void solvemaze() {
 
     if (leftValue == LOW && rightValue == LOW) { // corner
       goBackward();
-      delay(300);
-      Stop();
+      delay(200);
     }
     
     else if (leftValue == LOW) { // left side is blocked
       goRight();
-      delay(300);
-      Stop();
     }
     
     else if (rightValue == LOW) { // right side is blocked
       goLeft();
-      delay(300);
-      Stop();
     }
     
     else { // otherwise turn left
       goLeft();
-      delay(300);
-      Stop();
     }
   }
     
