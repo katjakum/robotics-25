@@ -11,23 +11,26 @@ const int echopin = 4;
 const int trigpin = 10; 
 const int servopin = 9; 
 
-const int frontlimit = 20; 
+const int frontlimit = 20;  
 
 const int leftSensor = 5;
 const int rightSensor = 2; 
-
 Servo head;
-
 int distanceL, distanceF, distanceR;
 
 void speed() {
-  analogWrite(ena, 100);
-  analogWrite(enb, 100);
+  analogWrite(ena, 110);
+  analogWrite(enb, 110);
 }
 
-void turningSpeed() {
-  analogWrite(ena, 140);
-  analogWrite(enb, 140);
+void turningSpeedBig() {
+  analogWrite(ena, 160);
+  analogWrite(enb, 160);
+}
+
+void turningSpeedSmall() {
+  analogWrite(ena, 130);
+  analogWrite(enb, 130);
 }
 
 void goForward() {
@@ -43,34 +46,44 @@ void goRight() {
   digitalWrite(rearR, HIGH);
   digitalWrite(frontL, HIGH);
   digitalWrite(rearL, LOW);
-  turningSpeed();
+  turningSpeedBig();
 }
 
-void goLeft() {
+void goRightSmall() {
+  digitalWrite(frontR, LOW);
+  digitalWrite(rearR, HIGH);
+  digitalWrite(frontL, HIGH);
+  digitalWrite(rearL, LOW);
+  turningSpeedSmall();
+}
+
+void goLeft()
+{
   digitalWrite(frontR, HIGH);
   digitalWrite(rearR, LOW);
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, HIGH);
-  turningSpeed();
+  turningSpeedBig();
 }
 
-void goBackward() {
-  digitalWrite(frontR, LOW);
-  digitalWrite(rearR, HIGH);
+void goLeftSmall()
+{
+  digitalWrite(frontR, HIGH);
+  digitalWrite(rearR, LOW);
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, HIGH);
-  speed();
+  turningSpeedSmall();
 }
 
-void Stop() {
+void Stop()
+{
   digitalWrite(frontR, LOW);
   digitalWrite(rearR, LOW);
   digitalWrite(frontL, LOW);
   digitalWrite(rearL, LOW);
-  analogWrite(ena, 0);
-  analogWrite(enb, 0); 
+  analogWrite(ena,0);
+  analogWrite(enb,0); 
 }
-
 int measureDistance() {
   digitalWrite(trigpin, LOW);
   delayMicroseconds(2);
@@ -83,12 +96,11 @@ int measureDistance() {
   return distance;
 }
 
-int measure() { 
+int measure(){
   head.write(90);
   delay(150);
   return measureDistance();
 }
-
 void setup() {
   pinMode(ena, OUTPUT);
   pinMode(frontR, OUTPUT);
@@ -106,47 +118,36 @@ void setup() {
 }
 
 void solvemaze() {
-  distanceF = measure(); 
-  int leftValue = digitalRead(leftSensor);
-  int rightValue = digitalRead(rightSensor);
+    distanceF = measure(); 
+    int leftValue = digitalRead(leftSensor);
+    int rightValue = digitalRead(rightSensor);
+    // detects a wall less than 20 centimeters away
+    if (distanceF < frontlimit) {
+        Stop();
+        delay(100);
+        // detects a wall on the left, goes right
+        if (leftValue == LOW) {
+            goRight();
+        } 
+        // otherwise goes left
+        else {
+            goLeft();  
+        }
+    }
+    // detects a wall on the left, goes slighty right
+    else if (leftValue == LOW) {
+        goRightSmall();
+    }
+    // detects a wall on the right, goes slighty left 
+    else if (rightValue == LOW){
+        goLeftSmall();
+    }
+    // otherwise goes straight 
+    else {
+        goForward();
+    }
 
-  if (distanceF < frontlimit) { // wall infront
-    Stop();
-    delay(100);
-
-    if (leftValue == LOW && rightValue == LOW) { // corner
-      goBackward();
-      delay(200);
-    }
-    
-    else if (leftValue == LOW) { // left side is blocked
-      goRight();
-    }
-    
-    else if (rightValue == LOW) { // right side is blocked
-      goLeft();
-    }
-    
-    else { // otherwise turn left
-      goLeft();
-    }
-  }
-    
-  else if (leftValue == LOW && rightValue == HIGH) { // avoid left wall
-    goRight();
-  }
-    
-  else if (rightValue == LOW && leftValue == HIGH) { // avoid right wall
-    goLeft();
-  }
-    
-  else { // no sensors activated, go forward
-    goForward();
-  }
-
-  delay(50);
+    delay(50);
 }
-
-void loop() {
-  solvemaze();
-}
+void loop() { 
+  solvemaze(); }
